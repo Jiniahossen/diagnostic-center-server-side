@@ -30,6 +30,25 @@ async function run() {
 
     const userCollection = client.db('Diagnostic-center').collection('users')
     const testCollection = client.db('Diagnostic-center').collection('tests')
+    const bookCollection = client.db('Diagnostic-center').collection('bookedTest')
+    const recommCollection = client.db('Diagnostic-center').collection('recommendations')
+
+    //get recommendation post
+
+    app.get('/recommendations',async(req,res)=>{
+      const item=await recommCollection.find().toArray();
+      res.send(item);
+    })
+
+    //get recommendation post by id
+
+    app.get('/recommendations/:id',async(req,res)=>{
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await recommCollection.findOne(query)
+      res.send(result);
+    })
+
 
 
 
@@ -37,12 +56,12 @@ async function run() {
 
     app.post('/users', async (req, res) => {
       const user = req.body;
-      const query = { email: user.email, name:user.name };
+      const query = { email: user.email, name: user.name };
       const existingUser = await userCollection.findOne(query);
       if (existingUser) {
         return res.send({ message: 'user already in use', insertedId: null })
       }
-     
+
       const result = await userCollection.insertOne(query);
 
       res.send(result)
@@ -71,25 +90,61 @@ async function run() {
 
     //post test
 
-    app.post('/tests',async(req,res)=>{
-      const test=req.body;
-      const result=await testCollection.insertOne(test);
+    app.post('/tests', async (req, res) => {
+      const test = req.body;
+      const result = await testCollection.insertOne(test);
       res.send(result)
     })
 
     //get tests data from database
 
-    app.get('/tests',async(req,res)=>{
-      const result=await testCollection.find().toArray();
+    app.get('/tests', async (req, res) => {
+      const result = await testCollection.find().toArray();
       res.send(result)
     })
 
-    app.get('/tests/:id',async(req,res)=>{
-      const id=req.params.id;
-      const query={_id:new ObjectId(id)}
-      const result=await testCollection.findOne(query)
+    app.get('/tests/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await testCollection.findOne(query)
       res.send(result)
     })
+
+
+    //post booked data
+
+    app.post('/book', async (req, res) => {
+      const bookedItem = req.body;
+      const result = await bookCollection.insertOne(bookedItem);
+      res.send(result);
+    })
+
+    app.get('/book', async (req, res) => {
+      const result = await bookCollection.find().toArray();
+      res.send(result)
+    })
+
+
+    //update slots after booking
+
+    //   app.patch('/tests/:id', async (req, res) => {
+    //     const id = req.params.id;
+    //     const filter = { _id: new ObjectId(id) };
+    //     const test = await testCollection.findOne(filter);
+
+    //     if (test && typeof test.slots === 'string') {
+    //         test.slots = parseInt(test.slots, 10);
+    //     }
+
+    //     const updateSlots = {
+    //         $inc: {
+    //             slots: -1,
+    //         },
+    //     };
+
+    //     const result = await testCollection.updateOne(filter, updateSlots);
+    //     res.send(result);
+    // });
 
 
     //update user to admin
