@@ -26,7 +26,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const userCollection = client.db('Diagnostic-center').collection('users')
     const testCollection = client.db('Diagnostic-center').collection('tests')
@@ -159,6 +159,24 @@ async function run() {
 
 
 
+    // Update book test report status
+    app.put('/book/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+
+      // Assuming you want to update the report status to 'delivered'
+      const updatedReport = await bookCollection.updateOne(filter, {
+        $set: {
+          report: 'delivered',
+          testReport: req.body.testReport, // Assuming you want to store the testReport image URL
+        },
+      });
+
+      res.send(updatedReport);
+    });
+
+
+
     //update slots after booking
 
     //   app.patch('/tests/:id', async (req, res) => {
@@ -232,10 +250,6 @@ async function run() {
     app.get('/users/blocked/:email', async (req, res) => {
       const email = req.params.email;
 
-      // if (email !== req.decoded.email) {
-      //     return res.status(403).send({ message: 'forbidden access' })
-      // }
-
       const query = { email: email };
       const user = await userCollection.findOne(query);
       let blocked = false;
@@ -295,8 +309,8 @@ async function run() {
 
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
